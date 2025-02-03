@@ -10,18 +10,20 @@ import os
 from pathlib import Path
 import zipfile
 
-
 openai.api_key = st.secrets["api"]["OPENAI_API_KEY"]
 
 # Function to fetch response from GPT
-def fetch_gpt_response(query):
+def fetch_gpt_response(domain, query):
     try:
+        system_prompt = f"You are an expert in the {domain} domain only. Only answer the questions related to the specified {domain} domain and don't answer any other questions."
+        
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are an expert in the pharmaceutical and medical domain only. Only answer those questions and don't answer any other questions."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query},
             ],
+            max_tokens=2000  # Setting token limit
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -213,20 +215,23 @@ st.markdown("---")
 
 # Input query section
 st.header("🔍 Content Generation")
-query = st.text_area(
-    "Enter your query below:",
-    height=200,
-    placeholder="Enter any query related to Medical and Pharmaceutical Domain",
-)
+# User selects the domain first
+domain = st.text_input("Enter the domain in which the answer is required:", placeholder="Example: Medical, Pharmaceutical, Finance, etc.")
 
-if query:
-    # Fetch response
-    response = fetch_gpt_response(query)  # Replace with your actual function
+if domain:
+    query = st.text_area(
+        "Enter your query below:",
+        height=200,
+        placeholder=f"Enter any query related to the {domain} domain",
+    )
+    
+    if query:
+        # Fetch response
+        response = fetch_gpt_response(domain, query)
 
-    # Display the response
-    st.subheader("Response")
-    st.write(response)
-
+        # Display the response
+        st.subheader("Response")
+        st.write(response)
     # Horizontal line before download options
     st.markdown("---")
 
