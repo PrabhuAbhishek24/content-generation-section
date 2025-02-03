@@ -13,10 +13,13 @@ import zipfile
 openai.api_key = st.secrets["api"]["OPENAI_API_KEY"]
 
 
-# Function to fetch response from GPT
-def fetch_gpt_response(domain, query):
+def fetch_gpt_response(domain, query, token_limit):
     try:
-        system_prompt = f"You are an expert in the {domain} domain only. Only answer the questions related to the specified {domain} domain and don't answer any other questions."
+        system_prompt = (
+            f"You are an expert in the {domain} domain only. "
+            f"Only answer the questions related to the specified {domain} domain "
+            "and don't answer any other questions."
+        )
         
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -24,11 +27,12 @@ def fetch_gpt_response(domain, query):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query},
             ],
-            max_tokens=2000  # Setting token limit
+            max_tokens=token_limit  # Set token limit based on user type
         )
         return response.choices[0].message.content
     except Exception as e:
         return f"Error: {str(e)}"
+
 
 def save_as_scorm_pdf(content, output_folder="scorm_package", scorm_zip_name="scorm_package.zip"):
     # Step 1: Create the SCORM folder structure
@@ -216,6 +220,15 @@ st.markdown("---")
 
 # Input query section
 st.header("🔍 Content Generation")
+
+# User selects if they are a Free or Paid user
+user_type = st.radio("Select your user type:", ("Free User", "Paid User"))
+
+# Set token limit based on user selection
+# Set token limit based on user selection
+token_limit = 200 if user_type == "Free User" else 4000  # Increased for paid users
+
+
 # User selects the domain first
 domain = st.text_input("Enter the domain in which the answer is required:", placeholder="Example: Medical, Pharmaceutical, Finance, etc.")
 
@@ -235,7 +248,7 @@ if domain:
         # Check if a new query has been entered
         if query != st.session_state.get("last_query"):
             # Fetch response and store in session state
-            st.session_state.generated_response = fetch_gpt_response(domain, query)
+            st.session_state.generated_response = fetch_gpt_response(domain, query,token_limit)
             st.session_state.last_query = query  # Update last query
 
         # Display the response
