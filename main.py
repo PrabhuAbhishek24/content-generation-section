@@ -12,6 +12,7 @@ import zipfile
 
 openai.api_key = st.secrets["api"]["OPENAI_API_KEY"]
 
+
 # Function to fetch response from GPT
 def fetch_gpt_response(domain, query):
     try:
@@ -218,6 +219,11 @@ st.header("🔍 Content Generation")
 # User selects the domain first
 domain = st.text_input("Enter the domain in which the answer is required:", placeholder="Example: Medical, Pharmaceutical, Finance, etc.")
 
+
+# Ensure session state exists for response storage
+if "generated_response" not in st.session_state:
+    st.session_state.generated_response = None
+
 if domain:
     query = st.text_area(
         "Enter your query below:",
@@ -226,12 +232,15 @@ if domain:
     )
     
     if query:
-        # Fetch response
-        response = fetch_gpt_response(domain, query)
+        # Check if a new query has been entered
+        if query != st.session_state.get("last_query"):
+            # Fetch response and store in session state
+            st.session_state.generated_response = fetch_gpt_response(domain, query)
+            st.session_state.last_query = query  # Update last query
 
         # Display the response
         st.subheader("Response")
-        st.write(response)
+        st.write(st.session_state.generated_response)
     # Horizontal line before download options
     st.markdown("---")
 
@@ -240,12 +249,12 @@ if domain:
 
     # Button to download SCORM PDF
     if st.button("Download the PDF as SCORM Package"):
-        save_as_scorm_pdf(response)
+        save_as_scorm_pdf(st.session_state.generated_response)
         st.success("SCORM package generated successfully!")
 
     # Button to download SCORM Word
     if st.button("Download the Word File as SCORM Package"):
-        scorm_word = save_as_scorm_word(response, file_name="response.docx")
+        scorm_word = save_as_scorm_word(st.session_state.generated_response, file_name="response.docx")
         if scorm_word:
             st.success("SCORM Word package generated successfully!")
             st.download_button(
