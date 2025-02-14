@@ -207,7 +207,7 @@ with st.expander("1️⃣ **Content Generation Instructions**", expanded=True):
     st.markdown(
         """
         ### How to use:
-        - Use this module to generate content for **pharmaceutical** and **medical** queries.
+        - Use this module to generate content for any type of domain.
         - **Steps**:
           1. Enter your query in the text area provided below.
           2. Click the **Submit** button to generate AI-powered content.
