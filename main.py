@@ -13,7 +13,7 @@ import zipfile
 openai.api_key = st.secrets["api"]["OPENAI_API_KEY"]
 
 
-def fetch_gpt_response(domain, query, token_limit):
+def fetch_gpt_response(domain, query):
     try:
         system_prompt = (
             f"You are an expert in the {domain} domain only. "
@@ -27,7 +27,6 @@ def fetch_gpt_response(domain, query, token_limit):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query},
             ],
-            max_tokens=token_limit  # Set token limit based on user type
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -221,12 +220,6 @@ st.markdown("---")
 # Input query section
 st.header("🔍 Content Generation")
 
-# User selects if they are a Free or Paid user
-user_type = st.radio("Select your user type:", ("Free User", "Paid User"))
-
-# Set token limit based on user selection
-# Set token limit based on user selection
-token_limit = 200 if user_type == "Free User" else 4000  # Increased for paid users
 
 
 # User selects the domain first
